@@ -1,27 +1,10 @@
-import express from "express";
 import fetch from "node-fetch";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
-
-app.get("/api", (req, res) => {
-  res.json({ status: "NandiAI backend running 🚀" });
-});
-
-app.post("/chat", async (req, res) => {
+app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
-
     if (!userMessage) {
-      return res.json({ reply: "❌ Empty message" });
+      return res.status(400).json({ error: "No message provided" });
     }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -35,6 +18,20 @@ app.post("/chat", async (req, res) => {
         input: userMessage
       })
     });
+
+    const data = await response.json();
+
+    const reply =
+      data.output?.[0]?.content?.[0]?.text ||
+      "Sorry, I couldn't reply.";
+
+    res.json({ reply });
+
+  } catch (error) {
+    console.error("OpenAI error:", error);
+    res.status(500).json({ error: "AI server error" });
+  }
+});    });
 
     const data = await response.json();
 
