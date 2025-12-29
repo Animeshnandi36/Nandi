@@ -1,8 +1,29 @@
+import express from "express";
 import fetch from "node-fetch";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+// HEALTH CHECK
+app.get("/", (req, res) => {
+  res.send("NandiAI backend running 🚀");
+});
+
+// CHAT API
 app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
+
     if (!userMessage) {
       return res.status(400).json({ error: "No message provided" });
     }
@@ -27,14 +48,16 @@ app.post("/api/chat", async (req, res) => {
 
     res.json({ reply });
 
-  } catch (error) {
-    console.error("OpenAI error:", error);
+  } catch (err) {
+    console.error("AI ERROR:", err);
     res.status(500).json({ error: "AI server error" });
   }
-});    });
+});
 
-    const data = await response.json();
-
+// START SERVER
+app.listen(PORT, () => {
+  console.log(`NandiAI running on port ${PORT}`);
+});
     const reply = data.output_text || "⚠️ No AI response";
 
     res.json({ reply });
