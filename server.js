@@ -13,20 +13,20 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// Test route
+// Health check
 app.get("/api", (req, res) => {
   res.json({ status: "NandiAI backend running 🚀" });
 });
 
-// Chat API
+// Chat endpoint
 app.post("/chat", async (req, res) => {
-  const userMessage = req.body.message;
-
-  if (!userMessage) {
-    return res.json({ reply: "❌ Empty message" });
-  }
-
   try {
+    const userMessage = req.body.message;
+
+    if (!userMessage) {
+      return res.json({ reply: "❌ Empty message" });
+    }
+
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -35,6 +35,27 @@ app.post("/chat", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4.1-mini",
+        input: userMessage
+      })
+    });
+
+    const data = await response.json();
+
+    const reply =
+      data.output_text ||
+      "⚠️ No AI response";
+
+    res.json({ reply });
+
+  } catch (error) {
+    console.error(error);
+    res.json({ reply: "❌ Server error" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log("NandiAI running on port", PORT);
+});        model: "gpt-4.1-mini",
         input: userMessage
       })
     });
