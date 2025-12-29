@@ -9,16 +9,13 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve frontend
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// Health check
 app.get("/api", (req, res) => {
   res.json({ status: "NandiAI backend running 🚀" });
 });
 
-// Chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -41,52 +38,16 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    const reply =
-      data.output_text ||
-      "⚠️ No AI response";
+    const reply = data.output_text || "⚠️ No AI response";
 
     res.json({ reply });
 
-  } catch (error) {
-    console.error(error);
-    res.json({ reply: "❌ Server error" });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log("NandiAI running on port", PORT);
-});        model: "gpt-4.1-mini",
-        input: userMessage
-      })
-    });
-
-    const data = await response.json();
-    const reply =
-      data.output_text ||
-      "⚠️ No reply from AI";
-
-    res.json({ reply });
   } catch (err) {
+    console.error(err);
     res.json({ reply: "❌ Server error" });
   }
 });
 
 app.listen(PORT, () => {
   console.log("NandiAI running on port", PORT);
-});    const data = await openaiRes.json();
-
-    if (!data.output_text) {
-      return res.status(500).json({ error: "No AI response" });
-    }
-
-    res.json({ reply: data.output_text });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`NandiAI running on port ${PORT}`);
 });
