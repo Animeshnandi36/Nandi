@@ -1,37 +1,54 @@
 import express from "express";
+import fetch from "node-fetch";
 import cors from "cors";
-import OpenAI from "openai";
 
 const app = express();
+const PORT = process.env.PORT || 10000;
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+// TEST ROUTE
+app.get("/", (req, res) => {
+  res.send("NandiAI backend is running 🚀");
 });
 
-app.post("/chat", async (req, res) => {
+// CHAT ROUTE
+app.post("/api/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: userMessage
+    if (!userMessage) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        input: userMessage
+      })
     });
 
-    res.json({
-      reply: response.output_text
-    });
+    const data = await response.json();
+
+    if (!data.output_text) {
+      console.error(data);
+      return res.status(500).json({ error: "No response from AI" });
+    }
+
+    res.json({ reply: data.output_text });
 
   } catch (err) {
-    res.json({
-      reply: "❌ AI error. Check API key or billing."
-    });
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("NandiAi running on port", PORT);
-});
+  console.log(`NandiAI running on port ${PORT}`);
+});});
