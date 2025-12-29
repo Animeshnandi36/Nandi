@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NandiAI 🤖</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      background: #020617;
+    }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .title {
+      line-height: 1.1;
+    }
+
+    .title h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #22c55e;
+    }
+
+    /* CHAT */
+    .chat {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 75%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    .bot {
+      background: #1e293b;
+      align-self: flex-start;
+    }
+
+    .user {
+      background: #2563eb;
+      align-self: flex-end;
+    }
+
+    .typing {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* INPUT */
+    .input-box {
+      display: flex;
+      gap: 10px;
+      padding: 12px;
+      border-top: 1px solid #1e293b;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      background: #020617;
+      color: white;
+      border: 1px solid #1e293b;
+    }
+
+    button {
+      width: 44px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: #38bdf8;
+      color: black;
+      font-size: 18px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- HEADER -->
+    <div class="header">
+      <img src="logo.png" class="logo" alt="NandiAI Logo">
+      <div class="title">
+        <h1>NandiAI 🤖</h1>
+        <div class="status">● Online</div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat" id="chat">
+      <div class="msg bot">👋 Hi! I’m NandiAI. How can I help you today?</div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-box">
+      <input id="input" placeholder="Ask NandiAI anything…" />
+      <button onclick="send()">➤</button>
+    </div>
+
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+
+    function addMsg(text, cls) {
+      const div = document.createElement("div");
+      div.className = "msg " + cls;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMsg(text, "user");
+      input.value = "";
+
+      const typing = document.createElement("div");
+      typing.className = "typing";
+      typing.textContent = "NandiAI is typing...";
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+        typing.remove();
+        addMsg(data.reply || "❌ No response from AI.", "bot");
+
+      } catch (e) {
+        typing.remove();
+        addMsg("❌ Server error. Try again.", "bot");
+      }
+    }
+
+    input.addEventListener("keypress", e => {
+      if (e.key === "Enter") send();
+    });
+  </script>
+</body>
+  </html>
