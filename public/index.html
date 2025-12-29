@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NandiAi 🤖</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+body{margin:0;font-family:Poppins;background:#0f172a;color:#e5e7eb}
+.app{max-width:420px;margin:auto;height:100vh;display:flex;flex-direction:column}
+.header{padding:14px;border-bottom:1px solid #1e293b}
+.chat{flex:1;padding:16px;overflow-y:auto}
+.msg{padding:12px 14px;border-radius:18px;margin-bottom:12px;max-width:80%}
+.bot{background:#1e293b}
+.user{background:#2563eb;margin-left:auto}
+.input{display:flex;padding:12px;gap:10px;border-top:1px solid #1e293b}
+input{flex:1;padding:12px;border-radius:999px;border:none;background:#1e293b;color:#fff}
+button{width:44px;border-radius:50%;border:none;background:#38bdf8}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="header"><b>🤖 NandiAi</b></div>
+
+  <div class="chat" id="chat">
+    <div class="msg bot">👋 Hi! I’m NandiAi. How can I help you?</div>
+  </div>
+
+  <div class="input">
+    <input id="input" placeholder="Ask NandiAi…" onkeydown="if(event.key==='Enter')send()">
+    <button onclick="send()">➤</button>
+  </div>
+</div>
+
+<script>
+const chat=document.getElementById("chat");
+const input=document.getElementById("input");
+
+function add(text,type){
+  const d=document.createElement("div");
+  d.className="msg "+type;
+  d.innerText=text;
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+async function send(){
+  const msg=input.value.trim();
+  if(!msg)return;
+  add(msg,"user");
+  input.value="";
+
+  const res=await fetch("/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:msg})
+  });
+
+  const data=await res.json();
+  add(data.reply,"bot");
+}
+</script>
+</body>
+                        </html>
